@@ -36,3 +36,15 @@
     transform: rotate(360deg);
   }
 }
+
+.fighter-list {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  max-width: 80vw;
+}
+
+.fighter {
+  display: flex;
+  justify-content: space-between;
+}
