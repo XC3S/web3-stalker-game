@@ -5,21 +5,59 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 import FighterFactory from './artifacts/contracts/FighterFactory.sol/FighterFactory.json';
+import CombatFactory from './artifacts/contracts/CombatFactory.sol/CombatFactory.json';
 
-const fighterFactoryAddress = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
+const fighterFactoryAddress = "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707";
+const combatFactoryAddress = "0x61c36a8d610163660e21a8b7359e1cac0c9133e1";
 
 function App() {
   
   const [fighterName, setFighterName] = useState();
   const [myFighters, setMyFighters] = useState([]);
 
+  const [combatFighterId1, setCombatFighterId1] = useState();
+  const [combatFighterId2, setCombatFighterId2] = useState();
+  const [combatFighterId3, setCombatFighterId3] = useState();
+
   useEffect(() => {
     console.log('[Get Fighters Initially]');
     getMyFighters();
+    getCurrentCombat();
   }, []);
 
   async function requestAccount(){
     await window.ethereum.request({ method: 'eth_requestAccounts' });
+  }
+
+  async function getCurrentCombat() {
+    if (typeof window.ethereum !== 'undefined') {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const contract = new ethers.Contract(combatFactoryAddress, CombatFactory.abi, provider)
+      try {
+        const data = await contract.getCurrentCombat()
+        console.log('[Current Combat] ', data)
+      } catch (err) {
+        console.log("Error: ", err)
+      }
+    }    
+  }
+
+  async function createCombat() {
+    const fighter1Id = parseInt(combatFighterId1);
+    const fighter2Id = parseInt(combatFighterId2);
+    const fighter3Id = parseInt(combatFighterId3);
+
+    if (typeof window.ethereum !== 'undefined') {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(combatFactoryAddress, CombatFactory.abi, signer)
+      try {
+        const data = await contract.createCombat(fighter1Id,fighter2Id,fighter3Id);
+        console.log('[new Combat] ', data)
+      } catch (err) {
+        console.log("Error: ", err)
+      }
+    }    
   }
 
   async function getMyFighterCount() {
@@ -28,7 +66,7 @@ function App() {
       const contract = new ethers.Contract(fighterFactoryAddress, FighterFactory.abi, provider)
       try {
         const data = await contract.getMyFighterCount()
-        console.log('data: ', data)
+        console.log('[getMyFighterCount]', data)
       } catch (err) {
         console.log("Error: ", err)
       }
@@ -58,7 +96,7 @@ function App() {
         });
 
         setMyFighters(res);
-        console.log('data: ', res);
+        console.log('[getMyFighters]', res);
 
       } catch (err) {
         console.log("Error: ", err)
@@ -72,7 +110,7 @@ function App() {
       const contract = new ethers.Contract(fighterFactoryAddress, FighterFactory.abi, provider)
       try {
         const data = await contract.getAllFighters()
-        console.log('data: ', data)
+        console.log('[getAllFighters]', data)
       } catch (err) {
         console.log("Error: ", err)
       }
@@ -112,10 +150,18 @@ function App() {
             {myFighters.map(item => {
               return <div className='fighter' key={item.id.toString()}>
                 <div>{item.name}</div>
+                <div style={{'fontSize': '12px', 'color': 'grey'}}>{item.id}</div>
                 <div>{item.stats.health}/{item.stats.baseHealth}</div>
               </div>
             })}
           </div>
+        </div>
+        <div>
+          <h3>new Combat</h3>
+          <input onChange={e => setCombatFighterId1(e.target.value)} placeholder="Fighter Id 1"/><br/>
+          <input onChange={e => setCombatFighterId2(e.target.value)} placeholder="Fighter Id 2"/><br/>
+          <input onChange={e => setCombatFighterId3(e.target.value)} placeholder="Fighter Id 3"/><br/>
+          <button onClick={createCombat}>Create Combat</button>
         </div>
       </header>
     </div>

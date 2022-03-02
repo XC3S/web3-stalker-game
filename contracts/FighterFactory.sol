@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "hardhat/console.sol";
+import "./CombatFactory.sol";
 
 contract FighterFactory {
 
@@ -10,6 +11,19 @@ contract FighterFactory {
 
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
+
+    CombatFactory combatFactory;
+
+    // https://cryptozombies.io/en/lesson/2/chapter/13
+    // for interactions with external contracts
+    constructor(){
+        // maybe its cooler to decouple the combat so we have no dependencies at all
+        // would be cool for backward compatibility as we could build on top of it without changes
+        // and just stick it together in the frontend
+        combatFactory = new CombatFactory();
+        console.log('Fighter Factory:', address(this));
+        console.log('Combat Factory:', address(combatFactory));
+    }
 
     struct Fighter {
         address owner;
@@ -30,6 +44,10 @@ contract FighterFactory {
 
     Fighter[] public fighters;
     
+    function getCombatFactoryAddress() public view returns (address) {
+        return address(combatFactory);
+    }
+
     function getMyFighterCount() public view returns (uint) {
         return ownerFighterCount[msg.sender];
     }
